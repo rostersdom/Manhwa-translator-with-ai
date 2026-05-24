@@ -1,7 +1,6 @@
 # 📚 AI Manga & Manhwa Translator
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GPU: NVIDIA](https://img.shields.io/badge/GPU-NVIDIA%20CUDA-76B900.svg)](https://developer.nvidia.com/cuda-toolkit)
 [![GitHub stars](https://img.shields.io/github/stars/rostersdom/Manhwa-translator-with-ai?style=social)](https://github.com/rostersdom/Manhwa-translator-with-ai/stargazers)
 
@@ -179,7 +178,8 @@ API будет доступно по адресу: http://127.0.0.1:8000/docs
 ```bash
 docker-compose up -d --build
 ```
-
+Поддержите меня: 40817 810 4 4978 4217332 СБЕР
+Если нужно специально для вас с дообучением модели и тд: писать в тг @Sitmors за символическую плату
 ---
 
 ## 🛠 Оптимизация под слабое железо
@@ -187,8 +187,3 @@ docker-compose up -d --build
 * Память PyTorch защищена от сильной фрагментации (`max_split_size_mb:32`).
 * Тяжелый Inpainting (LaMa) принудительно вынесен на процессор (CPU, 6 потоков), чтобы освободить видеопамять для нейросетей перевода и детекции (YOLO).
 * Встроена агрессивная очистка ОЗУ и кэша CUDA после обработки каждого бабла, предотвращающая падение скрипта с ошибкой Out-Of-Memory при пакетной обработке глав.
-
----
-
-## 📄 Лицензия
-Этот проект распространяется под лицензией **MIT License**. Вы можете свободно использовать, изменять и распространять этот код (в том числе в коммерческих целях). Подробнее см. в файле `LICENSE`.
