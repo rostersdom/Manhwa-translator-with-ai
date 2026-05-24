@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manga Translator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0b0f19; color: #e0e0e0; min-height: 100vh; }
+  .container { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 1.8rem; margin-bottom: 8px; color: #fff; }
+  .subtitle { color: #888; margin-bottom: 32px; }
+  .card { background: #1a1f2e; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #2a2f3e; }
+  h2 { font-size: 1.2rem; margin-bottom: 16px; color: #fff; }
+  .form-group { margin-bottom: 16px; }
+  label { display: block; margin-bottom: 6px; color: #aaa; font-size: 0.9rem; }
+  select, input[type="text"] { width: 100%; padding: 10px 12px; background: #0b0f19; border: 1px solid #333; border-radius: 8px; color: #e0e0e0; font-size: 0.95rem; }
+  select:focus, input:focus { outline: none; border-color: #4a9eff; }
+  input[type="file"] { width: 100%; padding: 8px; background: #0b0f19; border: 1px dashed #444; border-radius: 8px; color: #aaa; cursor: pointer; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border: none; border-radius: 8px; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+  .btn-primary { background: #4a9eff; color: #fff; }
+  .btn-primary:hover { background: #3a8eef; }
+  .btn-primary:disabled { background: #2a4f7f; cursor: not-allowed; }
+  .btn-secondary { background: #2a2f3e; color: #e0e0e0; }
+  .btn-secondary:hover { background: #3a3f4e; }
+  .row { display: flex; gap: 12px; align-items: flex-end; }
+  .row > * { flex: 1; }
+  .progress-bar { height: 6px; background: #2a2f3e; border-radius: 3px; margin-top: 12px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #4a9eff, #6b4eff); border-radius: 3px; transition: width 0.3s ease; width: 0%; }
+  .job-list { margin-top: 16px; }
+  .job-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #0b0f19; border-radius: 8px; margin-bottom: 8px; }
+  .job-id { font-family: monospace; color: #4a9eff; }
+  .job-status { padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; }
+  .status-pending { background: #2a2f3e; color: #aaa; }
+  .status-processing { background: #1a3a5e; color: #4a9eff; }
+  .status-completed { background: #1a3a2e; color: #4aff8e; }
+  .status-failed { background: #3a1a1e; color: #ff4a4a; }
+  .result { margin-top: 16px; }
+  .result img { width: 100%; max-width: 800px; display: block; margin: 0 auto 16px; border-radius: 4px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; }
+  .tab { padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; background: #1a1f2e; border: 1px solid #2a2f3e; border-bottom: none; color: #888; }
+  .tab.active { background: #1a1f2e; color: #fff; border-color: #4a9eff; }
+  .hidden { display: none; }
+  .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 24px; border-radius: 8px; color: #fff; font-size: 0.9rem; animation: fadeIn 0.3s; z-index: 1000; }
+  .toast-success { background: #1a6a3e; }
+  .toast-error { background: #6a1a1e; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Manga Translator</h1>
+  <p class="subtitle">Автоматический перевод манги и манхвы на русский язык</p>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="files">Загрузить файлы</div>
+    <div class="tab" data-tab="url">Скачать по ссылке</div>
+    <div class="tab" data-tab="jobs">История</div>
+  </div>
+
+  <div id="tab-files">
+    <div class="card">
+      <h2>Загрузить страницы</h2>
+      <div class="form-group">
+        <label>Изображения</label>
+        <input type="file" id="fileInput" multiple accept="image/*">
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label>Режим</label>
+          <select id="modeFiles">
+            <option value="Манхва (Свиток)">Манхва (Свиток)</option>
+            <option value="Манга (Постранично)">Манга (Постранично)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Переводчик</label>
+          <select id="engineFiles">
+            <option value="yandex">Yandex</option>
+            <option value="google">Google</option>
+            <option value="bing">Bing</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="translateFiles()">Перевести</button>
+      <div id="progressFiles" class="progress-bar hidden"><div class="progress-fill" id="progressFillFiles"></div></div>
+    </div>
+    <div id="resultFiles" class="result"></div>
+  </div>
+
+  <div id="tab-url" class="hidden">
+    <div class="card">
+      <h2>Скачать и перевести по ссылке</h2>
+      <div class="form-group">
+        <label>Ссылка на главу</label>
+        <input type="text" id="urlInput" placeholder="https://mangadex.org/chapter/...">
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label>Режим</label>
+          <select id="modeUrl">
+            <option value="Манга (Постранично)">Манга (Постранично)</option>
+            <option value="Манхва (Свиток)">Манхва (Свиток)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Переводчик</label>
+          <select id="engineUrl">
+            <option value="yandex">Yandex</option>
+            <option value="google">Google</option>
+            <option value="bing">Bing</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="translateUrl()">Скачать и Перевести</button>
+      <div id="progressUrl" class="progress-bar hidden"><div class="progress-fill" id="progressFillUrl"></div></div>
+    </div>
+    <div id="resultUrl" class="result"></div>
+  </div>
+
+  <div id="tab-jobs" class="hidden">
+    <div class="card">
+      <h2>История переводов</h2>
+      <button class="btn btn-secondary" onclick="loadJobs()">Обновить</button>
+      <div id="jobList" class="job-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+let ws = null;
+
+function showToast(msg, type='success') {
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.toggle('hidden', t.id !== `tab-${name}`));
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+async function translateFiles() {
+  const input = document.getElementById('fileInput');
+  if (!input.files.length) { showToast('Выберите файлы', 'error'); return; }
+  const mode = document.getElementById('modeFiles').value;
+  const engine = document.getElementById('engineFiles').value;
+  const btn = document.querySelector('#tab-files .btn-primary');
+  btn.disabled = true;
+  document.getElementById('progressFiles').classList.remove('hidden');
+
+  const form = new FormData();
+  for (const f of input.files) form.append('files', f);
+  form.append('mode', mode);
+  form.append('engine', engine);
+
+  try {
+    const res = await fetch(`${API}/api/v1/translate/files`, { method: 'POST', body: form });
+    const job = await res.json();
+    showToast(`Задача ${job.id} создана`);
+    watchJob(job.id, 'resultFiles', 'progressFillFiles');
+  } catch (e) {
+    showToast(`Ошибка: ${e.message}`, 'error');
+    btn.disabled = false;
+  }
+}
+
+async function translateUrl() {
+  const url = document.getElementById('urlInput').value;
+  if (!url) { showToast('Введите ссылку', 'error'); return; }
+  const mode = document.getElementById('modeUrl').value;
+  const engine = document.getElementById('engineUrl').value;
+  const btn = document.querySelector('#tab-url .btn-primary');
+  btn.disabled = true;
+  document.getElementById('progressUrl').classList.remove('hidden');
+
+  try {
+    const res = await fetch(`${API}/api/v1/translate/url`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode, engine, source_url: url }),
+    });
+    const job = await res.json();
+    showToast(`Задача ${job.id} создана`);
+    watchJob(job.id, 'resultUrl', 'progressFillUrl');
+  } catch (e) {
+    showToast(`Ошибка: ${e.message}`, 'error');
+    btn.disabled = false;
+  }
+}
+
+function watchJob(jobId, resultId, progressId) {
+  const resultDiv = document.getElementById(resultId);
+  const progressFill = document.getElementById(progressId);
+
+  ws = new WebSocket(`${API.replace('http', 'ws')}/ws/jobs/${jobId}`);
+
+  ws.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    if (data.type === 'progress') {
+      progressFill.style.width = `${data.progress * 100}%`;
+    } else if (data.type === 'completed') {
+      fetchJobResult(jobId, resultId, progressId);
+    }
+  };
+
+  ws.onerror = () => {
+    setTimeout(() => fetchJobResult(jobId, resultId, progressId), 1000);
+  };
+
+  setTimeout(() => fetchJobResult(jobId, resultId, progressId), 2000);
+}
+
+async function fetchJobResult(jobId, resultId, progressId) {
+  try {
+    const res = await fetch(`${API}/api/v1/jobs/${jobId}`);
+    const job = await res.json();
+    document.getElementById(progressId).style.width = `${job.progress * 100}%`;
+
+    if (job.status === 'completed' && job.result_html) {
+      document.getElementById(resultId).innerHTML = job.result_html;
+      document.querySelector(`#${resultId}`).closest('.card')?.querySelector('.btn-primary')?.disabled = false;
+      showToast('Перевод завершён');
+      if (ws) ws.close();
+    } else if (job.status === 'failed') {
+      showToast(`Ошибка: ${job.error_message}`, 'error');
+      document.querySelector(`#${resultId}`).closest('.card')?.querySelector('.btn-primary')?.disabled = false;
+    } else {
+      setTimeout(() => fetchJobResult(jobId, resultId, progressId), 2000);
+    }
+  } catch (e) {
+    setTimeout(() => fetchJobResult(jobId, resultId, progressId), 2000);
+  }
+}
+
+async function loadJobs() {
+  const list = document.getElementById('jobList');
+  try {
+    const res = await fetch(`${API}/api/v1/jobs?limit=20`);
+    const data = await res.json();
+    list.innerHTML = data.jobs.map(j => `
+      <div class="job-item">
+        <div>
+          <div class="job-id">${j.id}</div>
+          <div style="font-size:0.8rem;color:#888;margin-top:4px">
+            ${j.mode} | ${j.engine} | ${j.total_pages} стр.
+            ${j.created_at ? '| ' + new Date(j.created_at).toLocaleString('ru') : ''}
+          </div>
+        </div>
+        <span class="job-status status-${j.status}">${j.status}</span>
+      </div>
+    `).join('');
+  } catch (e) {
+    list.innerHTML = '<div style="color:#888">Не удалось загрузить историю</div>';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadJobs);
+</script>
+</body>
+</html>
